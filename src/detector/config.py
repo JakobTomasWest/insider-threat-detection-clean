@@ -1,0 +1,1 @@
+INTERNAL_DOMAINS = {"dtaa.gov", "mail.dtaa.gov"}

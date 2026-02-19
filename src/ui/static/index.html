@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insider Threat Detection</title>
+    <link rel="stylesheet" href="/static/style.css?v=4">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-tabs">
+                    <button class="sidebar-tab active" onclick="setSidebarTab('alerts')">Alerts</button>
+                    <button class="sidebar-tab" onclick="setSidebarTab('watchlist')">Watchlist</button>
+                </div>
+                <div class="sidebar-controls" id="alertFilters">
+                    <button class="filter-btn active" onclick="setSidebarFilter('all')">All</button>
+                    <button class="filter-btn" onclick="setSidebarFilter('escalated')">Escalated</button>
+                </div>
+                <div class="sidebar-stats">
+                    <span id="userCount">0</span> users
+                </div>
+            </div>
+            <div id="userList" class="user-list">
+                <!-- User items injected here -->
+            </div>
+            <!-- Global Forecast Summary Card -->
+            <div id="forecastSummaryCard" class="forecast-summary-card" style="display: none;">
+                <h4>Forecast Performance</h4>
+                <div class="summary-stat">
+                    <span>Total Forecasted:</span> <span id="fsTotal">0</span>
+                </div>
+                <div class="summary-stat">
+                    <span>Correct:</span> <span id="fsCorrect">0</span>
+                </div>
+                <div class="summary-stat">
+                    <span>Best Lead:</span> <span id="fsBestLead">-</span>
+                </div>
+                <div class="summary-stat">
+                    <span>Median Lead:</span> <span id="fsMedianLead">-</span>
+                </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Region: Heartbeat -->
+            <!-- Top Region: Hero Panel -->
+            <section class="heartbeat-section">
+                <div class="heartbeat-header">
+                    <h3>Highest-Risk Users</h3>
+                    <div class="heartbeat-controls">
+                        <div class="heartbeat-meta">
+                            <span id="latestDayDisplay">--</span>
+                            <span id="frozenLabel" style="display: none; margin-left: 0.5rem;">(frozen)</span>
+                        </div>
+                        <button id="pauseBtn" class="pause-btn" onclick="togglePause()">
+                            <span id="pauseIcon">⏸</span>
+                            <span id="pauseText">Pause</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="heroPanel">
+                    <!-- Hero or Case Notes content will be injected here by renderHeroOrCaseNotes() -->
+                    <canvas id="heartbeatCanvas" style="display: none;"></canvas>
+                </div>
+            </section>
+
+            <!-- User Detail View -->
+            <div id="userView" class="user-view" style="display: none;">
+                <div class="user-header">
+                    <div id="userHeaderMain">
+                        <h2 id="selectedUserKey">User: ...</h2>
+                        <button onclick="toggleCaseNotes()" class="case-notes-btn">Case Notes</button>
+                    </div>
+                    <div id="userHeaderCaseNotes" class="user-header-casenotes" style="display:none;">
+                        <!-- inline case notes injected here -->
+                    </div>
+                </div>
+
+                <!-- Watchlist Summary Strip -->
+                <div id="watchlistSummaryStrip" class="watchlist-summary-strip" style="display: none;">
+                    <div class="strip-item">Max Forecast: <span id="wsMax">-</span></div>
+                    <div class="strip-item">First Forecast: <span id="wsFirst">-</span></div>
+                    <div class="strip-item">First Escalation: <span id="wsEsc">-</span></div>
+                    <div class="strip-item">Lead Time: <span id="wsLead">-</span></div>
+                </div>
+
+                <!-- User Detail Tabs -->
+                <div class="detail-tabs">
+                    <button class="detail-tab-btn active" onclick="switchDetailTab('rules')">Rule-Based</button>
+                    <button class="detail-tab-btn" onclick="switchDetailTab('ml')">ML</button>
+                    <button class="detail-tab-btn" onclick="switchDetailTab('anomaly')">Anomaly</button>
+                    <button class="detail-tab-btn" onclick="switchDetailTab('forecast')">Forecast</button>
+                </div>
+
+                <div id="alertsTabContent" class="table-container">
+                    <div class="risk-timeline-header">
+                        <div class="risk-timeline-title">User Behavior Risk Trend</div>
+                        <div class="risk-timeline-controls">
+                            <span class="control-label">Window:</span>
+                            <select id="timelineWindowSelect" onchange="setTimelineWindowSize(this.value)">
+                                <option value="7">7d</option>
+                                <option value="30">30d</option>
+                            </select>
+                            <div class="timeline-arrows">
+                                <button id="timelineLeftBtn" class="arrow-btn" onclick="scrollTimeline(-1)">←</button>
+                                <button id="timelineRightBtn" class="arrow-btn" onclick="scrollTimeline(1)">→</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="risk-timeline-body">
+                        <canvas id="riskTimelineCanvas"></canvas>
+                        <div class="risk-timeline-legend">
+                            <span class="legend-item"><span class="legend-dot legend-rule"></span>Rule score</span>
+                            <span class="legend-item"><span class="legend-dot legend-ml"></span>ML score</span>
+                            <span class="legend-item"><span class="legend-dot legend-anomaly"></span>Anomaly
+                                score</span>
+                            <span class="legend-item"><span class="legend-dot legend-forecast"></span>Forecast
+                                score</span>
+                            <span class="legend-item"><span class="legend-dot legend-ensemble"></span>Ensemble
+                                score</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Forecast Tab Content -->
+                <div id="forecastTabContent" class="table-container" style="display: none;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Day</th>
+                                <th>Forecast Score</th>
+                                <th>Escalated</th>
+                                <th>Ensemble Score</th>
+                                <th>Window</th>
+                            </tr>
+                        </thead>
+                        <tbody id="forecastTableBody">
+                            <!-- Forecast alerts injected here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Window View Panel -->
+                <div id="windowViewPanel" class="window-view-panel" style="display: none;">
+                    <div class="window-header">
+                        <h3 id="windowTitle">14-Day Window</h3>
+                        <button class="close-window-btn" onclick="closeWindowPanel()">×</button>
+                    </div>
+                    <div class="window-table-container">
+                        <table class="data-table window-table">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Logon AH Rate</th>
+                                    <th>Device AH Rate</th>
+                                    <th>File AH Rate</th>
+                                    <th>USB Connects</th>
+                                    <th>Wikileaks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="windowTableBody">
+                                <!-- Window rows injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="emptyState" class="empty-state">
+                Select a user to view alerts.
+            </div>
+        </main>
+    </div>
+
+    <!-- Alert Modal -->
+    <div id="alertModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div class="modal-header">
+                <h2 id="modalTitle">Alert Details</h2>
+                <div class="modal-meta">
+                    <div id="modalUser"
+                        style="font-size: 1.1rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.25rem;">
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">
+                        <span id="modalDay"></span>
+                        <span style="margin: 0 0.5rem;">|</span>
+                        <span id="modalScenario"></span>
+                    </div>
+                </div>
+                <div class="modal-score-box">
+                    <div>Ensemble Score: <span id="modalScore"></span></div>
+                    <div id="modalStatus" class="status-badge"></div>
+                </div>
+            </div>
+
+            <div class="detectors-grid">
+                <!-- Rule Card -->
+                <div class="detector-card" id="card-rule">
+                    <div class="card-header">
+                        <h3>Rule Detector</h3>
+                        <span class="fired-badge" id="badge-rule"></span>
+                    </div>
+                    <div class="card-body" id="body-rule"></div>
+                </div>
+
+                <!-- ML Card -->
+                <div class="detector-card" id="card-ml">
+                    <div class="card-header">
+                        <h3>ML Detector</h3>
+                        <span class="fired-badge" id="badge-ml"></span>
+                    </div>
+                    <div class="card-body" id="body-ml"></div>
+                </div>
+
+                <!-- Anomaly Card -->
+                <div class="detector-card" id="card-anomaly">
+                    <div class="card-header">
+                        <h3>Anomaly Detector</h3>
+                        <span class="fired-badge" id="badge-anomaly"></span>
+                    </div>
+                    <div class="card-body" id="body-anomaly"></div>
+                </div>
+
+                <!-- Forecast Card -->
+                <div class="detector-card" id="card-forecast">
+                    <div class="card-header">
+                        <h3>Forecast</h3>
+                        <span class="fired-badge" id="badge-forecast"></span>
+                    </div>
+                    <div class="card-body" id="body-forecast"></div>
+                </div>
+            </div>
+
+            <div class="explanation-section">
+                <h3>Alert Description</h3>
+                <div id="explanationContent" class="explanation-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js?v=4"></script>
+</body>
+
+</html>

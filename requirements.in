@@ -1,0 +1,17 @@
+# Core data stack
+pandas==2.3.2
+numpy==2.0.2
+pyarrow==21.0.0
+
+# Jupyter runtime (so notebooks run out of the box)
+ipykernel
+jupyter_client
+ipython
+
+# Plotting (used occasionally in sanity cells)
+matplotlib
+
+# Nice to have for OS-agnostic tz handling
+python-dateutil
+pytz
+tzdata

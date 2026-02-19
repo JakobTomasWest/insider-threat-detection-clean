@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Alert Heartbeat</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h2>Alerts per Detector</h2>
+  <canvas id="chart" width="800" height="400"></canvas>
+  <h3>Recent alerts</h3>
+  <table id="tbl" border="1" cellpadding="4">
+    <thead>
+      <tr><th>day</th><th>user</th><th>detector</th><th>reason</th><th>score</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <p id="stamp"></p>
+  <script>
+    const ctx = document.getElementById('chart');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: { labels: [], datasets: [] },
+      options: { scales: { y: { beginAtZero: true } } }
+    });
+
+    async function refresh() {
+      const r = await fetch('/alerts/heartbeat');
+      const data = await r.json();
+      chart.data.labels = data.labels;
+      chart.data.datasets = data.datasets.map(d => ({
+        label: d.label,
+        data: d.data,
+        fill: false,
+        borderWidth: 2
+      }));
+      chart.update();
+      document.getElementById('stamp').innerText = 'Updated: ' + new Date().toLocaleString();
+    }
+
+    async function refreshTable() {
+      const r = await fetch('/alerts/recent?n=50');
+      const rows = await r.json();
+      const tb = document.querySelector('#tbl tbody');
+      tb.innerHTML = rows.map(a => `
+        <tr data-user="${a.user_key||''}" data-day="${a.day||''}">
+          <td>${a.day||''}</td>
+          <td>${a.user_key||''}</td>
+          <td>${a.detector||''}</td>
+          <td>${a.reason||''}</td>
+          <td>${a.score ?? ''}</td>
+        </tr>
+      `).join('');
+    }
+
+    refresh();
+    refreshTable();
+    setInterval(refresh, 5000);
+    setInterval(refreshTable, 5000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+[project]
+name = "insider-detector"
+version = "0.0.1"
+requires-python = ">=3.9"
+dependencies = ["pandas", "pyarrow"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}

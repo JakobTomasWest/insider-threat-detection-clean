@@ -1,0 +1,16 @@
+*.ipynb filter=nbstripout
+# Strip Jupyter outputs (installed via nbstripout)
+*.ipynb filter=nbstripout
+
+# Treat parquet as binary (no giant diffs)
+*.parquet binary
+
+# Make GitHub Linguist ignore generated/data-y dirs in language %s
+data/** linguist-vendored
+out/**  linguist-vendored
+
+# Sensible text handling
+*.py   text eol=lf
+*.md   text eol=lf
+*.csv  text eol=lf
+*.json text eol=lf

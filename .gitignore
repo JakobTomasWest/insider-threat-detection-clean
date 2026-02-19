@@ -1,0 +1,69 @@
+# OS / editor
+.DS_Store
+.vscode/*
+!.vscode/settings.json
+
+# Python env & caches
+.venv/
+.venv_*/
+__pycache__/
+*.pyc
+
+# Jupyter checkpoints
+**/.ipynb_checkpoints/
+
+# Data & pipeline outputs (never commit)
+data/
+!data/debug/
+!data/debug/alerts_aug2010_debug.ndjson
+out/
+out_*/
+.trash/
+answers/*.csv
+
+# Large pipeline artifacts (anywhere)
+**/*.parquet
+**/*.feather
+**/*.csv.zip
+# Do not track scenario CSVs under answers/
+answers/**/*.csv
+!answers/license.txt
+!answers/README.md
+
+# Generated sidecars (only those produced under out/)
+out/**/*.json
+out/**/*.html
+
+# Logs / temp
+*.log
+*.tmp
+# answers: ignore adhoc txt files
+answers/*.txt
+!answers/license.txt
+
+# data artifacts
+out/
+*.parquet
+
+# executed notebook artifacts
+.notebooks_exec/
+notebooks/*.out.ipynb
+notebooks/*.exec.ipynb
+
+
+# notebooks: keep current, ignore legacy copies
+legacy/**/*.ipynb
+
+# schema snapshot outputs (generated; do not commit)
+schemas_snapshot/
+
+# local scratch
+local_wip.patch
+
+# local QC snapshots
+qc_*
+qc_snapshots/
+
+# Deprecated/unused anomaly detector files
+src/detector/anomaly_base.py
+notebooks/ml/train_anomalydecection_model.ipynb
