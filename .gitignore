@@ -68,3 +68,4 @@ qc_snapshots/
 src/detector/anomaly_base.py
 notebooks/ml/train_anomalydecection_model.ipynb
 src/hard-rule.py
+data/
