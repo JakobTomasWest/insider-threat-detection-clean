@@ -71,3 +71,4 @@ src/hard-rule.py
 data/
 debug_state.py
 scripts/dev_cheats.sh
+scripts/dev_eval_rules_s1.py
