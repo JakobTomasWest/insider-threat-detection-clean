@@ -72,3 +72,7 @@ data/
 debug_state.py
 scripts/dev_cheats.sh
 scripts/dev_eval_rules_s1.py
+
+docs/ui_refactor_plan.md
+docs/ui_story_roadmap.md
+docs/ensemble_meta_roadmap.md
