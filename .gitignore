@@ -70,3 +70,4 @@ notebooks/ml/train_anomalydecection_model.ipynb
 src/hard-rule.py
 data/
 debug_state.py
+scripts/dev_cheats.sh
