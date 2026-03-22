@@ -59,4 +59,4 @@ docs/m1_s1_*
 docs/ml_s1_*
 docs/pipeline_threshold_*
 docs/ui_*
-docs/UI_README.md
+docs/UI_README.mdsrc/detector/anomaly_base.py
