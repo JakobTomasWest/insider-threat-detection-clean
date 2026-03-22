@@ -12,67 +12,51 @@ __pycache__/
 # Jupyter checkpoints
 **/.ipynb_checkpoints/
 
-# Data & pipeline outputs (never commit)
+# Data and generated outputs
 data/
-!data/debug/
-!data/debug/alerts_aug2010_debug.ndjson
 out/
 out_*/
 .trash/
-answers/*.csv
-
-# Large pipeline artifacts (anywhere)
 **/*.parquet
 **/*.feather
 **/*.csv.zip
-# Do not track scenario CSVs under answers/
-answers/**/*.csv
-!answers/license.txt
-!answers/README.md
-
-# Generated sidecars (only those produced under out/)
 out/**/*.json
 out/**/*.html
 
 # Logs / temp
 *.log
 *.tmp
-# answers: ignore adhoc txt files
-answers/*.txt
-!answers/license.txt
 
-# data artifacts
-out/
-*.parquet
-
-# executed notebook artifacts
+# Executed notebook artifacts
 .notebooks_exec/
 notebooks/*.out.ipynb
 notebooks/*.exec.ipynb
 
-
-# notebooks: keep current, ignore legacy copies
+# Legacy / local scratch
 legacy/**/*.ipynb
-
-# schema snapshot outputs (generated; do not commit)
 schemas_snapshot/
-
-# local scratch
 local_wip.patch
-
-# local QC snapshots
 qc_*
 qc_snapshots/
 
-# Deprecated/unused anomaly detector files
-src/detector/anomaly_base.py
-notebooks/ml/train_anomalydecection_model.ipynb
+# Deprecated / local-only files
 src/hard-rule.py
-data/
 debug_state.py
 scripts/dev_cheats.sh
 scripts/dev_eval_rules_s1.py
 
-docs/ui_refactor_plan.md
-docs/ui_story_roadmap.md
-docs/ensemble_meta_roadmap.md
+# Remove these from public repo, keep local if needed
+answers/
+notebooks/
+tests/
+release.txt
+
+# Internal docs not for public repo
+docs/anomaly_*
+docs/ensemble_*
+docs/features_v2.md
+docs/m1_s1_*
+docs/ml_s1_*
+docs/pipeline_threshold_*
+docs/ui_*
+docs/UI_README.md
