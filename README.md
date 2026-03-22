@@ -1,52 +1,300 @@
-# Insider Threat Capstone
+# Insider Threat Detection System
 
-This repo contains notebooks and helpers to clean and join CERT-style datasets:
-LDAP (monthly people snapshots), Logon, Device (USB), HTTP, Email, and File,
-plus a per-user “windows” viewer.
+A full-stack insider threat detection system that combines rule-based detection, anomaly detection, and machine learning to identify potential data exfiltration events from enterprise activity logs.
 
-## Repo layout
-- `notebooks/`
-  - `01_ldap_basics.ipynb` → builds `out/ldap_v1/*` lookups (per-month LDAP)
-  - `02_logon_clean.ipynb` → `out/logon_v1/*` (clean + enriched + PC lookups)
-  - `03_device_clean.ipynb` → `out/device_v1/*`
-  - `04_http_clean.ipynb`   → `out/http_v1/*`
-  - `05_email_clean.ipynb`  → `out/email_v1/*`
-  - `06_file_clean.ipynb`   → `out/file_v1/*`
-  - `create_user_windows.ipynb` → `out/windows_v1/*` (per-user timelines)
-  - `nb_paths.py` → tiny helper for paths (`data/<release>`, `out/<tag>`)
-- `release.txt` → which dataset release to use (e.g., `r1`, `r3`)
-- `data/` → **not in git** (large raw inputs)
-- `out/`  → **not in git** (derived artifacts)
+The system includes an end-to-end data pipeline and an interactive monitoring dashboard for investigating high-risk users.
 
-## Quick start
-1. Create/activate a virtualenv (Python 3.10+ recommended).
-2. `pip install -r requirements.txt`
-3. Put raw data under `data/<release>/` (e.g., `data/r1/LDAP/*.csv`, `data/r1/logon.csv`, etc.).
-4. Set the release in `release.txt` (e.g., `r1` or `r3`).
-5. Open `notebooks/01_ldap_basics.ipynb` and run top-to-bottom. Then `02_…`, etc.
+---
 
-## Notes
-- We keep raw `data/` and derived `out/` out of git to avoid huge repos.
-- All event tables join to LDAP on `(user_key, event_month)` (month start).
-- Usernames are normalized to `user_key` (lowercase, no domain/email).
+## Overview
 
+This repository implements an end-to-end insider threat detection system:
 
-⸻
+- Data ingestion and normalization of enterprise activity logs  
+- Feature engineering using sliding behavioral windows  
+- Rule-based detection of known attack patterns  
+- Anomaly detection for behavioral deviations  
+- Supervised machine learning for predictive detection  
+- Ensemble risk scoring  
+- Interactive monitoring dashboard for investigation  
 
-macOS Application Launcher
+The system processes enterprise activity logs including:
+
+- Logon events
+- HTTP activity
+- File transfers
+- Email activity
+- USB device usage
+- LDAP employee records
+
+---
+
+## Dashboard Preview
+The system includes an analyst-facing monitoring dashboard for investigating high-risk users, understanding alert timelines, and interpreting model outputs.
+
+### Dashboard Overview
+Provides a high-level view of system activity, risk trends, and active alerts.
+![Dashboard](docs/images/ui_dashboard.png)
+
+### User Risk List
+Displays users ranked by risk score, allowing analysts to quickly identify high-priority individuals.
+<img src="docs/images/ui_user_list.png" width="300"/>
+
+### Behavioral Risk Timeline
+Shows how user risk evolves over time across multiple detection models.
+![Timeline](docs/images/ui_timeline.png)
+
+### Detection Breakdown (Rule + ML + Anomaly + Forecast)
+Breaks down contributing signals from rule-based, anomaly, ML, and forecast models.
+![Detection](docs/images/ui_detection_breakdown.png)
+
+### Investigation Timeline (Case Notes)
+Presents a timeline of events and analyst-readable context for investigation.
+![Case Notes](docs/images/ui_case_notes.png)
+
+---
+
+## System Overview
+
+The system processes raw enterprise activity logs and transforms them into actionable alerts through a multi-stage pipeline:
+
+1. Raw logs → cleaned and normalized event tables  
+2. Behavioral features computed over time windows  
+3. Detection layer (rules, anomaly detection, ML models)  
+4. Ensemble scoring combines all signals  
+5. Alerts generated and visualized in the dashboard  
+
+See detailed documentation:
+- [Architecture](docs/architecture.md)
+- [Pipeline](docs/pipeline.md)
+- [Results](docs/results.md)
+
+---
+
+## Quick Start
+
+```bash
+git clone https://github.com/your-username/insider-threat-detection-clean
+cd insider-threat-detection-clean
+
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+scripts/build_all.sh
+make ui
+```
+
+Then open:
+
+http://127.0.0.1:8000
+
+---
+
+## Repository Structure
+
+```
+insider-threat-detection-clean
+│
+├── src/                Core detection system
+│   ├── detector/       Rule-based detection engine
+│   ├── anomaly/        Anomaly detection models
+│   ├── ml/             Supervised ML models
+│   ├── ui/             FastAPI + dashboard interface
+│   └── run_loop.py     Main detection pipeline
+│
+├── scripts/            Data processing and build scripts
+│   └── build_all.sh
+│
+├── docs/               Documentation and architecture notes
+│
+├── macos/              macOS launcher for the dashboard
+│
+├── Makefile            Project commands
+├── requirements.txt
+└── README.md
+```
+
+More information about specific folders:
+
+- [`src/`](src/)
+- [`scripts/`](scripts/)
+- [`docs/`](docs/)
+
+---
+
+## Dataset
+
+This project uses the **CERT Insider Threat Dataset (r5.2)**.
+
+Download:
+
+https://kilthub.cmu.edu/articles/dataset/Insider_Threat_Test_Dataset/12841247/1
+
+After downloading and extracting the dataset, place the files in:
+
+```
+data/r5.2/
+```
+
+Example structure:
+
+```
+data/r5.2/
+  LDAP/
+  device.csv
+  email.csv
+  file.csv
+  http.csv
+  logon.csv
+```
+
+The `data/` directory is excluded from Git because the dataset is large.
+
+---
+
+## Running the Pipeline
+
+Create a virtual environment:
+
+```
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Install dependencies:
+
+```
+pip install -r requirements.txt
+```
+
+Run the full data processing and detection pipeline:
+
+```
+scripts/build_all.sh
+```
+
+This generates derived datasets in:
+
+```
+out/
+```
+
+---
+
+## Launching the Dashboard
+
+Start the monitoring interface:
+
+```
+make ui
+```
+
+The dashboard will be available at:
+
+```
+http://127.0.0.1:8000
+```
+
+The dashboard allows analysts to:
+
+- monitor high-risk users
+- inspect alert timelines
+- analyze behavioral trends
+- understand model contributions (rule, anomaly, ML, forecast)
+
+---
+
+## macOS Application Launcher
 
 This repository includes a macOS application bundle that allows you to launch the UI dashboard without using the terminal.
 
-Running the UI from your Desktop
-1.Copy the app bundle to your Desktop:
-	cp -R macos/InsiderThreatUI.app ~/Desktop/
-2.Double-click InsiderThreatUI.app.
-This will:
-	•	activate .venv
-	•	run make ui
-	•	open the dashboard at http://127.0.0.1:8000
+Copy the launcher to your Desktop:
 
-If .venv/ does not exist, create it:
-python3 -m venv .venv
-source .venv/bin/activate
-make setup # installs all Python requirements into the venv
+```
+cp -R macos/InsiderThreatUI.app ~/Desktop/
+```
+
+Double-click the application to:
+
+- activate `.venv`
+- run `make ui`
+- open the dashboard automatically
+
+---
+
+## Detection Architecture
+
+The detection system combines three approaches.
+
+### Rule-Based Detection
+
+Detects explicit attack sequences such as:
+
+- USB exfiltration
+- suspicious file transfers
+- policy violations
+
+Implemented in:
+
+```
+src/detector/
+```
+
+### Anomaly Detection
+
+Behavioral deviations detected using statistical models and unsupervised learning.
+
+Implemented in:
+
+```
+src/anomaly/
+```
+
+### Machine Learning
+
+Supervised models trained on historical behavior patterns.
+
+Implemented in:
+
+```
+src/ml/
+```
+
+### Ensemble Scoring
+
+Detection signals from the rule engine, anomaly models, and ML models are combined into a unified **risk score**.
+
+---
+
+## Detection Performance
+
+Performance from Scenario‑1 exfiltration detection:
+
+| Metric | Value |
+|------|------|
+| Precision | 100% |
+| Recall | 93% |
+| Exfiltrators detected | 27 / 29 |
+
+---
+
+## Documentation
+
+Additional documentation and architecture notes are available in:
+
+- [`docs/`](docs/)
+
+---
+
+## Notes
+
+- Raw `data/` and derived `out/` directories are intentionally excluded from Git.
+- These artifacts can be reproduced by running the pipeline.
+- Usernames are normalized to `user_key` (lowercase, no domain/email).
+
+---
+
+## License
+
+This project is provided for academic and research purposes.
