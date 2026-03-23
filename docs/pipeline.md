@@ -13,36 +13,48 @@ The current pipeline is driven by project scripts and application code rather th
 
 ---
 
-## Pipeline Diagram
+## Pipeline Data Flow
 
-> TODO: INSERT PIPELINE DIAGRAM EXPORT FROM DRAW.IO HERE
 
 ```text
-Raw CERT Logs
+Raw CERT Logs (CSV)
    │
    ▼
-Data Cleaning & Normalization
+Event Parsing & Normalization
+(clean timestamps, user IDs, schemas)
    │
    ▼
-Derived Event Tables / Parquet Artifacts
+Unified Event Tables (DuckDB / Parquet)
+   │
+   ▼
+User-Day Aggregation
+(events grouped per user per day)
    │
    ▼
 Feature Engineering
+(features_v1 → features_v2, 14-day sliding windows)
    │
    ▼
-Detection Layer
-   ├─ Rule-Based Detection
-   ├─ Anomaly Detection
-   └─ Machine Learning Models
+Detector Inputs
+(per-user, per-day feature vectors)
+   │
+   ▼
+Detection Outputs
+- rule triggers (boolean flags)
+- anomaly scores (deviation metrics)
+- ML probabilities
    │
    ▼
 Ensemble Risk Scoring
+(weighted combination of signals)
    │
    ▼
-Alert Generation (NDJSON / derived outputs)
+Alert Records (NDJSON)
+(user, day, score, contributing signals)
    │
    ▼
-FastAPI Monitoring Dashboard
+Dashboard UI (FastAPI)
+(interactive investigation + visualization)
 ```
 
 ---
@@ -115,7 +127,7 @@ These artifacts are typically stored as derived outputs under `out/` and may inc
 
 Behavioral features are derived from historical user activity and aggregated across time windows.
 
-This stage is central to the system because it converts raw user actions into structured behavioral signals that can be consumed by the detectors.
+The resulting features are stored as `features_v2` datasets and serve as the primary input for all detection components.
 
 Examples of feature categories include:
 
@@ -225,7 +237,7 @@ This stage turns model output into something actionable for a human investigator
 
 At a practical level, the repo’s current workflow is script-driven.
 
-Typical execution looks like:
+Typical execution work flow:
 
 1. create and activate a virtual environment
 2. install dependencies from `requirements.txt`
@@ -246,7 +258,11 @@ The pipeline ultimately produces artifacts that support investigation and evalua
 - alert artifacts used by the dashboard
 - intermediate processed datasets used by the detectors
 
+
 The most important practical output for the UI is the generated alert data that the FastAPI dashboard reads at startup.
+
+The outputs of this pipeline are used to compute detection metrics and evaluation results described in `results.md`.
+
 
 ---
 

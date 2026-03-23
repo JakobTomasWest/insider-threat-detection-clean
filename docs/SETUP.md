@@ -1,9 +1,10 @@
 # Setup & Run Guide (Current Pipeline)
+This guide walks through building and running the full insider threat detection pipeline, from raw CERT logs to alert generation and visualization.
 
 This repo now uses a **Makefile + scripts** pipeline to build all Parquet artifacts.  
-The old notebooks are **view-only** and no longer the primary way to run ETL.
+Notebook-based workflows have been removed from the clean version of this repository.
 
-Use this guide as the single source of truth for:
+Use this guide as the primary reference for:
 
 - Setting up your Python environment  
 - Pointing the repo at a CERT release  
@@ -17,17 +18,14 @@ Use this guide as the single source of truth for:
 ## 0. Expected repo layout
 
 ```text
-capstone_root/
-├─ docs/                  # design docs, detector guides, UI handshake
-├─ notebooks/             # legacy / view-only ETL notebooks
-│  └─ ml/                 # notebook comparing detector and forecast models (s1)
+insider-threat-detection-clean/
+├─ docs/                  # architecture, pipeline, results, setup docs
 ├─ src/                   # ETL, feature, detector, and interface code
 ├─ scripts/               # shell + Python helpers (bootstrap, rebuild, qc, etc.)
-├─ data/                  # raw CERT CSVs (NOT committed)
+├─ data/                  # raw CERT CSVs (local only, not tracked)
 │  └─ <release>/...       # e.g., r5.2/logon.csv, device.csv, ...
 ├─ out/                   # all derived Parquet + QC outputs (NOT committed)
 │  └─ <release>/<domain>_v3
-├─ answers/               # answer keys / labels (local-only; gitignored)
 ├─ release.txt            # current release name, e.g. r5.2
 ├─ requirements.txt
 └─ Makefile
@@ -212,7 +210,7 @@ help_cheats
 
 ---
 
-## 5. Building daily features (v1 and v2)
+## 5. Feature Engineering (features_v1 → features_v2)
 
 Once ETL v3 has run, you can build per-user-per-day aggregates.
 
@@ -242,14 +240,17 @@ This runs `scripts/build_features_v2.py` and writes:
 out/<release>/features_v2/daily_user/daily_user.parquet
 ```
 
+`features_v2` is the primary feature set used by all detectors and is required for the detection pipeline.
+
 `features_v2` keeps the same `(user_key, day)` keys as v1 and adds:
+
 
 - After-hours rates and baselines  
 - USB counts and baselines  
 - Novelty flags  
 - Other derived features consumed by detectors
 
-See `docs/features_v2.md` for exact columns and window definitions.
+Feature definitions and window logic are implemented in the scripts under `scripts/` and can be inspected in `build_features_v2.py`.
 
 ### 5.3 Convenience target: build v1 + v2 + QC
 
@@ -321,7 +322,7 @@ This:
 - Reads `features_v2/daily_user.parquet` for the chosen release  
 - Builds rolling 14-day windows per user  
 - Calls all configured detectors (rules, anomaly, ml)  
-- Appends alerts to:
+- Appends alerts to a shared output path:
 
 ```text
 out/mvp0/alerts_ndjson/alerts.ndjson
@@ -350,45 +351,24 @@ You’ll see:
 - A heartbeat chart of alerts per day per detector  
 - A table of the most recent alerts from `alerts.ndjson`  
 
-For more detail on the UI contract and API endpoints, see `docs/ui_handshake.md`.
-
+UI behavior and API endpoints are defined in the FastAPI application under `src/ui/`.
 ---
 
 ## 8. Detector and feature details
 
-For detector developers:
+Detector logic and feature definitions are implemented directly in the `src/` and `scripts/` directories.
 
-- `docs/detector_dev_guide.md` describes:
-  - The input window shape from `features_v2/daily_user`  
-  - The contract for detector modules (`check(window_df, day, user_key)`)  
-  - How to structure `evidence` fields in alerts  
+- Detectors consume sliding windows from `features_v2/daily_user`
+- Features include baselines, trends, and novelty signals computed over 14-day windows
 
-For feature definitions:
-
-- `docs/features_v2.md` explains:
-  - The 14-day detector window  
-  - Trend and baseline definitions  
-  - All added columns and how they are computed  
-
-These docs are the reference when adding or modifying detectors that consume `features_v2`.
+All detectors operate on the `features_v2/daily_user` dataset.
 
 ---
 
-## 9. Legacy notebooks (view-only)
+## 9. Legacy notebooks
 
-The notebooks under `notebooks/` are now **legacy**:
+Notebook-based workflows have been removed from the clean version of this repository.
 
-- They mirror the ETL logic at a higher level  
-- They are useful for exploration, debugging, and teaching  
-- They are **not** the pipeline of record
-
-All official builds should go through:
-
-- `make setup`  
-- `make build`  
-- `make daily`  
-- `make run-loop` / `make ui`
-
-If notebook behavior and script behavior ever diverge, the **scripts + Makefile** version is authoritative.
+All pipeline execution is handled via the Makefile and scripts under `scripts/`.
 
 ---

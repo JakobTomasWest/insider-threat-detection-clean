@@ -9,6 +9,7 @@ The system processes enterprise activity logs, generates behavioral features, ap
 
 ![System Architecture](images/system_architecture.png)
 
+This diagram shows system components and their relationships. Data flows through ETL and feature layers into parallel detection modules, which are combined via an ensemble scoring layer before being surfaced in the UI.
 
 ---
 
@@ -32,6 +33,7 @@ Output artifacts are typically stored as Parquet tables or intermediate processe
 ### 2. Feature Engineering
 
 Behavioral features are computed from historical user activity.
+These features are materialized as structured datasets (e.g., features_v2) and serve as the primary input to all detection components.
 
 These features capture patterns such as:
 
@@ -44,7 +46,7 @@ Many features are computed using **sliding time windows** to capture behavioral 
 
 ---
 
-### 3. Detection Pipeline
+### 3. Detection Layer
 
 The system combines multiple detection strategies to identify potential insider threats.
 
@@ -114,23 +116,6 @@ Capabilities include:
 
 ---
 
-## Data Flow Summary
-
-```
-Raw Logs
-↓
-Cleaning
-↓
-Feature Engineering
-↓
-Detection
-↓
-Scoring
-↓
-Alerts
-```
-
----
 
 ## Notes
 

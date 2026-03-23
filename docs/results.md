@@ -2,7 +2,7 @@
 
 This document summarizes the evaluation results of the Insider Threat Detection System when applied to the CERT Insider Threat Dataset.
 
-The system combines rule-based detection, anomaly detection, and supervised machine learning models to identify malicious insider activity.
+The system combines rule-based detection, anomaly detection, and supervised machine learning models within an ensemble risk scoring pipeline to identify malicious insider activity.
 
 ---
 
@@ -18,6 +18,10 @@ These scenarios simulate employees attempting to remove sensitive information fr
 - external data transfer
 
 The goal of the system is to detect these behaviors **before or during the exfiltration process**.
+
+
+Detection is performed at the user-day level using aggregated behavioral features over sliding time windows.
+
 
 ---
 
@@ -44,7 +48,7 @@ Interpretation:
 
 A key goal of the system is detecting suspicious behavior **before the final exfiltration event occurs**.
 
-Machine learning models were able to identify behavioral anomalies several days prior to explicit data exfiltration in many scenarios.
+Detection models (rule-based, anomaly, and machine learning) were able to identify behavioral anomalies several days prior to explicit data exfiltration in many scenarios.
 
 This early warning capability allows analysts to investigate suspicious activity and potentially intervene before data loss occurs.
 
@@ -62,7 +66,7 @@ Multiple detection strategies contribute signals to the final alert scoring syst
 | Anomaly Detection | Detects deviations from historical user behavior |
 | Machine Learning Models | Learns complex behavioral patterns associated with insider threats |
 
-These detectors operate together in an **ensemble scoring system**, which produces a final risk score for each user.
+These detectors operate together in an **ensemble risk scoring system**, which produces a final risk score for each user.
 
 ![Detection Breakdown](images/ui_detection_breakdown.png)
 
@@ -78,9 +82,16 @@ Each detection layer captures different behavioral signals:
 - **Anomaly detection** captures deviations from normal user behavior.
 - **Machine learning models** identify complex multi-signal behavioral patterns.
 
-The ensemble approach improves recall while maintaining high precision.
+The ensemble risk scoring system integrates these signals to improve recall while maintaining high precision.
 
-![Detection Breakdown](images/ui_detection_breakdown.png)
+---
+
+
+## Data and Pipeline Context
+
+Results are generated from the `features_v2` daily_user dataset and the ensemble risk scoring pipeline described in `pipeline.md`.
+
+All detectors operate on sliding time-window features (e.g., 14-day behavioral windows) and produce per-user, per-day risk scores.
 
 ---
 
@@ -108,7 +119,7 @@ Key takeaways:
 
 - High precision and recall in detecting exfiltration cases
 - Ability to detect suspicious activity **before final data exfiltration events**
-- Robust detection through a **multi-layer ensemble pipeline**
+- Robust detection through a **multi-layer ensemble risk scoring pipeline**
 
 Future improvements may include:
 
