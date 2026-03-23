@@ -1,5 +1,8 @@
 # Insider Threat Detection System
 
+*Developed by Jakob West and Jordan Chambers  
+University of Utah – Master of Software Development Capstone*
+
 A full-stack insider threat detection system that combines rule-based detection, anomaly detection, and machine learning to identify potential data exfiltration events from enterprise activity logs.
 
 The system includes an end-to-end data pipeline and an interactive monitoring dashboard for investigating high-risk users.
@@ -26,6 +29,30 @@ The system processes enterprise activity logs including:
 - Email activity
 - USB device usage
 - LDAP employee records
+
+---
+
+## Why This Project Matters
+
+Insider threats are difficult to detect because malicious behavior often appears normal in isolation. This system models user behavior over time using sliding windows and combines multiple detection strategies to identify subtle deviations before critical events occur.
+
+---
+
+## Tech Stack
+
+- Python
+- DuckDB / Parquet
+- FastAPI
+- scikit-learn / XGBoost
+
+---
+
+## Key Features
+
+- Behavioral feature engineering using sliding time windows
+- Multi-detector system (rule-based, anomaly, ML)
+- Ensemble risk scoring for robust detection
+- End-to-end pipeline from raw logs to UI investigation
 
 ---
 
